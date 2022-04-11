@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slider</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+
+        .slider-wrapper {
+            max-width: 600px;
+            width: 100%;
+            margin: 25px auto;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+            padding: 15px 15px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-height: 500px;
+            flex-direction: column;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .buttons button {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 15px;
+        }
+
+        button {
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+            padding: 4px 8px;
+            border: none;
+            font-size: 22px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 3px;
+        }
+
+        .start-stop-button {
+            position: relative;
+        }
+
+        button#previous {
+            left: 5px;
+        }
+
+        button#next {
+            right: 5px;
+        }
+
+        img {
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            background: #F1F1F1;
+            max-width: 100%;
+            width: 100%;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="slider-wrapper">
+            <div class="buttons">
+                <button id="update" onclick="update();">Update</button>
+            </div>
+            <img src="./images/1000.jpg" alt="">
+            <button id="previous" onclick="previous();">&LeftArrow;</button>
+            <button id="next" onclick="next();">&RightArrow;</button>
+        </div>
+    </div>
+
+
+    <!-- ------------ Scripts ------------ -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <script>
+
+        let imgArr = [];
+        const imgDir = document.querySelector("img");
+        let i = 0;
+
+        $(document).ready(function () {
+
+            // ================== Load All Images from Images folder
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/images", true);
+            xhr.responseType = 'document';
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    var elements = xhr.response.getElementsByTagName("a");
+                    for (x of elements) {
+                        if (x.href.match(/\.(jpe?g|png|gif)$/)) {
+                            imgArr.push(x.href);
+                        }
+                    };
+                }
+                else {
+                    alert('Request failed. Returned status of ' + xhr.status);
+                }
+            }
+            xhr.send()
+
+
+
+            // ================== Change image Automatically
+            let visibleTime = 3000;
+
+            const interval = setInterval(() => {
+
+                imgDir.style.opacity = 0.1;
+                imgDir.style.marginLeft = "-100%";
+                imgDir.style.transition = "all 0.3s ease";
+
+                setTimeout(() => {
+                    imgDir.style.marginLeft = "100%";
+                    imgDir.style.width = "0px";
+                    imgDir.style.height = "0px";
+                }, 200);
+                setTimeout(() => {
+                    imgDir.style.width = "100%";
+                    imgDir.style.height = "100%";
+                }, 400);
+
+                let imgNameNumber;
+                setTimeout(() => {
+                    imgDir.setAttribute("src", imgArr[i])
+                    const imgName = imgArr[i].split("/")[4].split(".")[0];
+                    imgNameNumber = (parseInt(imgName));
+
+                    i++;
+                    if (imgArr.length <= i) {
+                        i = 0;
+                    }
+                    imgDir.style.opacity = 1;
+                    imgDir.style.marginLeft = 0;
+
+                }, 500);
+
+                if (typeof imgNameNumber === "number") {
+                    visibleTime = imgNameNumber;
+                }
+
+            }, visibleTime);
+
+
+        })
+
+        // ================== Change image to previous image
+        const previous = () => {
+            i = i - 1;
+            if (i < 0) {
+                i = imgArr.length - 1;
+            }
+
+            imgDir.style.opacity = 0.1;
+            imgDir.style.marginLeft = "-100%";
+            imgDir.style.transition = "all 0.3s ease";
+
+            setTimeout(() => {
+                imgDir.style.marginLeft = "100%";
+                imgDir.style.width = "0px";
+                imgDir.style.height = "0px";
+            }, 200);
+            setTimeout(() => {
+                imgDir.style.width = "100%";
+                imgDir.style.height = "100%";
+            }, 400);
+
+            setTimeout(() => {
+                imgDir.setAttribute("src", imgArr[i])
+                // const imgName = imgArr[i].split("/")[4].split(".")[0];
+                // console.log(imgName)
+
+                imgDir.style.opacity = 1;
+                imgDir.style.marginLeft = 0;
+            }, 500);
+        }
+        // ================== Change image to next image
+        const next = () => {
+            i = i + 1;
+            if (i >= imgArr.length) {
+                i = 0;
+            }
+
+            imgDir.style.opacity = 0.1;
+            imgDir.style.marginLeft = "-100%";
+            imgDir.style.transition = "all 0.3s ease";
+
+            setTimeout(() => {
+                imgDir.style.marginLeft = "100%";
+                imgDir.style.width = "0px";
+                imgDir.style.height = "0px";
+            }, 200);
+            setTimeout(() => {
+                imgDir.style.width = "100%";
+                imgDir.style.height = "100%";
+            }, 400);
+
+            setTimeout(() => {
+                imgDir.setAttribute("src", imgArr[i])
+                // const imgName = imgArr[i].split("/")[4].split(".")[0];
+                // console.log(imgName)
+
+                imgDir.style.opacity = 1;
+                imgDir.style.marginLeft = 0;
+            }, 500);
+        }
+        // ================== Reset Button
+        const update = () => {
+            i = 0;
+
+            imgDir.style.opacity = 0.1;
+            imgDir.style.marginLeft = "-100%";
+            imgDir.style.transition = "all 0.3s ease";
+
+            setTimeout(() => {
+                imgDir.style.marginLeft = "100%";
+                imgDir.style.width = "0px";
+                imgDir.style.height = "0px";
+            }, 200);
+            setTimeout(() => {
+                imgDir.style.width = "100%";
+                imgDir.style.height = "100%";
+            }, 400);
+
+            setTimeout(() => {
+                imgDir.setAttribute("src", imgArr[i])
+
+                imgDir.style.opacity = 1;
+                imgDir.style.marginLeft = 0;
+            }, 500);
+        }
+
+
+    </script>
+
+</body>
+
+</html>
